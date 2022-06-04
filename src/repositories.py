@@ -1,10 +1,12 @@
 import pandas
-import pandasql
 from pathlib import Path
 from pandas import DataFrame
+from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import sessionmaker, Session
 
 from enum import Enum
-from src.models import WinInterval
+from src.models import Base, Producer, Movie, WinInterval
 
 
 class MinMaxMode(Enum):
@@ -12,36 +14,37 @@ class MinMaxMode(Enum):
     MIN = 'MIN'
 
 
-class MoviesRepository:
-    def __init__(self: 'MoviesRepository', movies_csv: Path) -> None:
-        self._tb = pandas.read_csv(movies_csv, sep=';', keep_default_na=False)  # type: DataFrame
-        self._tb.winner = self._tb.winner.astype(bool)
+class ProducersRepository:
 
-    def find_win_interval(self: 'MoviesRepository', min_max_mode: MinMaxMode) -> list[WinInterval]:
-        movies_tb = self._tb
+    @staticmethod
+    def find_win_interval(db_session: Session, min_max_mode: MinMaxMode) -> list[WinInterval]:
         query = f'''
         WITH
-            index_tb AS (
-                SELECT ROW_NUMBER() OVER (ORDER BY movies_tb.producers, movies_tb.year ASC) AS row,
-                    movies_tb.producers,
-                    movies_tb.year
+            index_tb AS ( 
+                SELECT ROW_NUMBER() OVER (ORDER BY producers.id, movies.year ASC) AS row,
+                    producers.id AS producer_id,
+                    producers.name AS producer,
+                    movies.year AS movie_year
                 FROM
-                    movies_tb
-                WHERE movies_tb.winner = TRUE
+                    producers AS producers
+                        JOIN producer_movie AS pm ON producers.id = pm.producer_id
+                        JOIN movies AS movies ON movies.id = pm.movie_id
+                WHERE movies.winner = TRUE
             ),
             interval_tb AS (
                 SELECT
-                    idx1.producers,
-                    idx1.year AS previous_win,
-                    idx2.year AS following_win,
-                    {min_max_mode.value}(idx2.year - idx1.year) AS interval
+                    idx1.producer_id,
+                    idx1.producer,
+                    idx1.movie_year AS previous_win,
+                    idx2.movie_year AS following_win,
+                    {min_max_mode.value}(idx2.movie_year - idx1.movie_year) AS interval
                 FROM
                     index_tb AS idx1
-                        JOIN index_tb AS idx2 ON idx2.row = idx1.row + 1 AND idx2.producers = idx1.producers
-                GROUP BY idx1.producers
+                        JOIN index_tb AS idx2 ON idx2.row = idx1.row + 1 AND idx2.producer_id = idx1.producer_id
+                GROUP BY idx1.producer_id
             )
         SELECT
-            interval_tb.producers AS producer,
+            interval_tb.producer,
             interval_tb.interval,
             interval_tb.previous_win AS previousWin,
             interval_tb.following_win AS followingWin
@@ -52,19 +55,49 @@ class MoviesRepository:
                                       FROM
                                           interval_tb)'''
 
-        query_result = pandasql.sqldf(query, locals())
-
-        result = []
-        for _, row in query_result.iterrows():
-            result.append(WinInterval(**row.to_dict()))
-
+        query_result = db_session.execute(query)
+        # noinspection PyProtectedMember
+        result = [WinInterval(**row._mapping) for row in query_result]
         return result
 
 
 class Database:
     def __init__(self: 'Database', movies_csv: Path) -> None:
-        self._movies_repository = MoviesRepository(movies_csv)
+        self._engine = create_engine('sqlite:///:memory:', connect_args={'check_same_thread': False},
+                                     poolclass=StaticPool)
+        self._session_maker = sessionmaker(bind=self._engine)
+        self._session = self._session_maker()
+        self._create_tables()
+        self._populate_db(movies_csv)
+
+    def _create_tables(self: 'Database') -> None:
+        Base.metadata.create_all(self._engine)
+
+    def _populate_db(self: 'Database', movies_csv: Path) -> None:
+        movies_df = pandas.read_csv(movies_csv, sep=';', keep_default_na=False)  # type: DataFrame
+
+        all_producers_by_name = {}
+        movies = []
+        for _, movie_row in movies_df.iterrows():
+            producers_str = movie_row.producers.replace(' and ', ', ')  # type: str
+            producers = []
+            for producer_name in producers_str.split(','):
+                producer_name = producer_name.strip()
+                if len(producer_name) == 0:
+                    continue
+                if producer_name not in all_producers_by_name:
+                    all_producers_by_name[producer_name] = Producer(name=producer_name)
+                producers.append(all_producers_by_name[producer_name])
+
+            winner = movie_row.winner == 'yes'
+            movie = Movie(title=movie_row.title, year=movie_row.year, studios=movie_row.studios, winner=winner,
+                          producers=producers)
+            movies.append(movie)
+
+        if len(movies) > 0:
+            self._session.add_all(movies)
+            self._session.flush()
 
     @property
-    def movies_repository(self: 'Database') -> MoviesRepository:
-        return self._movies_repository
+    def session(self: 'Database') -> Session:
+        return self._session

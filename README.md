@@ -7,7 +7,13 @@ Finds producers with maximum and minimum interval between two prizes won.
  - Curl (Http requests): `apt update && apt install curl`
 
 # Installing Python Modules
- - Flask==2.1.2, pandas==1.4.2, pandasql==0.7.3, environs==9.5.0 and pytest==7.1.2:  
+ - `Flask==2.1.2`
+ - `pandas==1.4.2`
+ - `environs==9.5.0`
+ - `pytest==7.1.2`
+ - `SQLAlchemy==1.4.37`
+ - `Flask-SQLAlchemy==2.5.1`:  
+
 `pip3 install -r <project_dir>/requirements.txt`
 
 # Running
@@ -29,18 +35,18 @@ Finds producers with maximum and minimum interval between two prizes won.
 {
   "max": [
     {
-      "followingWin": 1990,
-      "interval": 6,
-      "previousWin": 1984,
-      "producer": "Bo Derek"
+      "followingWin": 2015,
+      "interval": 13,
+      "previousWin": 2002,
+      "producer": "Matthew Vaughn"
     }
   ],
   "min": [
     {
-      "followingWin": 1990,
-      "interval": 6,
-      "previousWin": 1984,
-      "producer": "Bo Derek"
+      "followingWin": 1991,
+      "interval": 1,
+      "previousWin": 1990,
+      "producer": "Joel Silver"
     }
   ]
 }
@@ -51,20 +57,20 @@ Finds producers with maximum and minimum interval between two prizes won.
  - `python3 -m pytest -v tests`:
 
 ```
-======================================= test session starts ========================================
+========================================= test session starts =========================================
 platform linux -- Python 3.9.9, pytest-7.1.2, pluggy-1.0.0 -- /home/rodolfo/venvs/movies_api/bin/python3
 cachedir: .pytest_cache
-rootdir: /home/rodolfo/movies_api
-collected 8 items                                                                                  
+rootdir: /home/rodolfo/src/movies_api
+collected 8 items                                                                                     
 
-tests/integration_test.py::test_empty_response[default_none_won.csv] PASSED                  [ 12%]
-tests/integration_test.py::test_empty_response[no_movies.csv] PASSED                         [ 25%]
-tests/integration_test.py::test_empty_response[one_won.csv] PASSED                           [ 37%]
-tests/integration_test.py::test_empty_response[two_same_producer_movies_one_won.csv] PASSED  [ 50%]
-tests/integration_test.py::test_two_wins_same_year PASSED                                    [ 62%]
-tests/integration_test.py::test_producers_same_win_interval_max_min PASSED                   [ 75%]
-tests/integration_test.py::test_default_movies_csv PASSED                                    [ 87%]
-tests/integration_test.py::test_default_all_won PASSED                                       [100%]
+tests/integration_test.py::test_empty_response[default_none_won.csv] PASSED                     [ 12%]
+tests/integration_test.py::test_empty_response[no_movies.csv] PASSED                            [ 25%]
+tests/integration_test.py::test_empty_response[one_won.csv] PASSED                              [ 37%]
+tests/integration_test.py::test_empty_response[two_same_producer_movies_one_won.csv] PASSED     [ 50%]
+tests/integration_test.py::test_two_wins_same_year PASSED                                       [ 62%]
+tests/integration_test.py::test_producers_same_win_interval_max_min PASSED                      [ 75%]
+tests/integration_test.py::test_default_movies_csv PASSED                                       [ 87%]
+tests/integration_test.py::test_default_all_won PASSED                                          [100%]
 
-======================================== 8 passed in 0.82s =========================================
+========================================== 8 passed in 1.46s ==========================================
 ```

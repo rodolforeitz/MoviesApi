@@ -1,12 +1,11 @@
+from sqlalchemy.orm import Session
 from src.models import MinMaxWinInterval
-from src.repositories import MoviesRepository, MinMaxMode
+from src.repositories import ProducersRepository, MinMaxMode
 
 
-class MoviesService:
-    def __init__(self: 'MoviesService', repository: MoviesRepository) -> None:
-        self._repository = repository
-
-    def find_min_max_win_interval(self: 'MoviesService') -> MinMaxWinInterval:
-        min_win_interval = self._repository.find_win_interval(MinMaxMode.MIN)
-        max_win_interval = self._repository.find_win_interval(MinMaxMode.MAX)
+class ProducersService:
+    @staticmethod
+    def find_min_max_win_interval(db_session: Session) -> MinMaxWinInterval:
+        min_win_interval = ProducersRepository.find_win_interval(db_session, MinMaxMode.MIN)
+        max_win_interval = ProducersRepository.find_win_interval(db_session, MinMaxMode.MAX)
         return MinMaxWinInterval(min_win_interval, max_win_interval)

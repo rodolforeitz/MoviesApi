@@ -92,18 +92,18 @@ def test_default_movies_csv() -> None:
     assert response.json == {
         'max': [
             {
-                'followingWin': 1990,
-                'interval': 6,
-                'previousWin': 1984,
-                'producer': 'Bo Derek'
+                'followingWin': 2015,
+                'interval': 13,
+                'previousWin': 2002,
+                'producer': 'Matthew Vaughn'
             }
         ],
         'min': [
             {
-                'followingWin': 1990,
-                'interval': 6,
-                'previousWin': 1984,
-                'producer': 'Bo Derek'
+                'followingWin': 1991,
+                'interval': 1,
+                'previousWin': 1990,
+                'producer': 'Joel Silver'
             }
         ]
     }
@@ -114,27 +114,58 @@ def test_default_all_won(resources_dir: Path) -> None:
     test_client = app.test_client()
 
     response = test_client.open('/producers/winners/min_max_win_interval', method='GET')
+    print(response.json)
     assert response.json == {
         'max': [
             {
-                'followingWin': 1989,
-                'interval': 9,
-                'previousWin': 1980,
-                'producer': 'Jerry Weintraub'
+                'followingWin': 2016,
+                'interval': 24,
+                'previousWin': 1992,
+                'producer': 'Charles Roven'
             }
         ],
         'min': [
             {
-                'followingWin': 2012,
-                'interval': 1,
-                'previousWin': 2011,
-                'producer': 'Wyck Godfrey, Stephenie Meyer and Karen Rosenfelt'
+                'followingWin': 2007,
+                'interval': 0,
+                'previousWin': 2007,
+                'producer': 'John Davis'
             },
             {
-                'followingWin': 1987,
-                'interval': 1,
-                'previousWin': 1986,
-                'producer': 'Yoram Globus and Menahem Golan'
+                'followingWin': 1985,
+                'interval': 0,
+                'previousWin': 1985,
+                'producer': 'Irwin Winkler'
+            },
+            {
+                'followingWin': 2001,
+                'interval': 0,
+                'previousWin': 2001,
+                'producer': 'Elie Samaha'
+            },
+            {
+                'followingWin': 2014,
+                'interval': 0,
+                'previousWin': 2014,
+                'producer': 'Ian Bryce'
+            },
+            {
+                'followingWin': 2009,
+                'interval': 0,
+                'previousWin': 2009,
+                'producer': 'Lorenzo di Bonaventura'
+            },
+            {
+                'followingWin': 2011,
+                'interval': 0,
+                'previousWin': 2011,
+                'producer': 'Jack Giarraputo'
+            },
+            {
+                'followingWin': 2015,
+                'interval': 0,
+                'previousWin': 2015,
+                'producer': 'Adam Sandler'
             }
         ]
     }
