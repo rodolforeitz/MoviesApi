@@ -11,8 +11,7 @@ Finds producers with maximum and minimum interval between two prizes won.
  - `pandas==1.4.2`
  - `environs==9.5.0`
  - `pytest==7.1.2`
- - `SQLAlchemy==1.4.37`
- - `Flask-SQLAlchemy==2.5.1`:  
+ - `SQLAlchemy==1.4.37`:  
 
 `pip3 install -r <project_dir>/requirements.txt`
 
