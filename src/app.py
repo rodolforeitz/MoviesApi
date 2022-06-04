@@ -1,6 +1,5 @@
-from typing import Any
-from typing import Optional
 from dataclasses import asdict
+from typing import Optional, Any
 from sqlalchemy.orm import Session
 from flask import Flask, jsonify, Response
 
